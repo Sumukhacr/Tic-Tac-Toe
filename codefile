@@ -1,0 +1,148 @@
+#include <iostream>
+#include <cstdlib>
+#include <ctime>
+using namespace std;
+
+const int SIZE = 3;
+char board[SIZE][SIZE];
+char human = 'X';
+char computer = 'O';
+
+void initializeBoard() {
+    for (int i = 0; i < SIZE; ++i)
+        for (int j = 0; j < SIZE; ++j)
+            board[i][j] = ' ';
+}
+
+void printBoard() {
+    cout << "-------------\n";
+    for (int i = 0; i < SIZE; ++i) {
+        cout << "| ";
+        for (int j = 0; j < SIZE; ++j) {
+            cout << board[i][j] << " | ";
+        }
+        cout << "\n-------------\n";
+    }
+}
+
+bool isValidMove(int row, int col) {
+    return row >= 0 && row < SIZE && col >= 0 && col < SIZE && board[row][col] == ' ';
+}
+
+bool placeMark(int row, int col, char player) {
+    if (isValidMove(row, col)) {
+        board[row][col] = player;
+        return true;
+    }
+    return false;
+}
+
+bool checkWin(char player) {
+    // Rows & columns
+    for (int i = 0; i < SIZE; ++i) {
+        if ((board[i][0] == player &&
+             board[i][1] == player &&
+             board[i][2] == player) ||
+            (board[0][i] == player &&
+             board[1][i] == player &&
+             board[2][i] == player)) {
+            return true;
+        }
+    }
+    // Diagonals
+    if ((board[0][0] == player &&
+         board[1][1] == player &&
+         board[2][2] == player) ||
+        (board[0][2] == player &&
+         board[1][1] == player &&
+         board[2][0] == player)) {
+        return true;
+    }
+    return false;
+}
+
+bool checkDraw() {
+    for (int i = 0; i < SIZE; ++i)
+        for (int j = 0; j < SIZE; ++j)
+            if (board[i][j] == ' ')
+                return false;
+    return true;
+}
+
+void computerMove() {
+    // Try to win
+    for (int i = 0; i < SIZE; ++i) {
+        for (int j = 0; j < SIZE; ++j) {
+            if (board[i][j] == ' ') {
+                board[i][j] = computer;
+                if (checkWin(computer)) return;
+                board[i][j] = ' ';
+            }
+        }
+    }
+
+    // Try to block human
+    for (int i = 0; i < SIZE; ++i) {
+        for (int j = 0; j < SIZE; ++j) {
+            if (board[i][j] == ' ') {
+                board[i][j] = human;
+                if (checkWin(human)) {
+                    board[i][j] = computer;
+                    return;
+                }
+                board[i][j] = ' ';
+            }
+        }
+    }
+
+    // Otherwise, pick random move
+    int row, col;
+    do {
+        row = rand() % SIZE;
+        col = rand() % SIZE;
+    } while (!isValidMove(row, col));
+
+    board[row][col] = computer;
+}
+
+int main() {
+    srand(time(0));
+    initializeBoard();
+    cout << "Welcome to Tic Tac Toe (You vs Computer)!\n";
+    printBoard();
+
+    while (true) {
+        int row, col;
+        cout << "Your move (row and column 0-2): ";
+        cin >> row >> col;
+
+        if (!placeMark(row, col, human)) {
+            cout << "Invalid move. Try again.\n";
+            continue;
+        }
+
+        printBoard();
+
+        if (checkWin(human)) {
+            cout << "🎉 You win!\n";
+            break;
+        } else if (checkDraw()) {
+            cout << "It's a draw!\n";
+            break;
+        }
+
+        cout << "Computer's move:\n";
+        computerMove();
+        printBoard();
+
+        if (checkWin(computer)) {
+            cout << "💻 Computer wins!\n";
+            break;
+        } else if (checkDraw()) {
+            cout << "It's a draw!\n";
+            break;
+        }
+    }
+
+    return 0;
+}
